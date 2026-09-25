@@ -65,8 +65,8 @@ the reasoning holds.
 
 ### The best-looking defence was the worst one
 
-My second-model output judge blocked 20 of 20 attacks. On its own that reads as a perfect
-control.
+My second-model output judge took the suite from 5 attacks succeeding to zero. On its own that
+reads as a perfect control.
 
 The benign control group showed it also blocked 5 of 8 legitimate requests. It refused to name
 who approved a budget because the answer "contains a specific date". It refused to explain the
@@ -106,14 +106,20 @@ The AI amplified that one to "likely exploitable". So did I, briefly, until I ch
 
 ## Which defences earned their place
 
-| Defence | Attacks stopped | Legitimate requests broken |
+My configurations are cumulative, so tool permissions ran with the input filter also enabled
+and the output judge ran with all three. Quoting the total stopped at each stage would credit
+every defence with its predecessors' work, so this is what each one closed that the previous
+configuration did not. Figures are `llama3.2:3b`, the only model I ran over the full suite.
+
+| Defence | Attacks it closed | Legitimate requests broken |
 |---|---|---|
-| Input filter (blocklist) | 3 | 0 |
-| Tool permissions | 5 | 0 |
-| Output judge (second model) | 15 | 5 of 8 |
+| Input filter (blocklist) | 2 of 9 | 0 of 8 |
+| Tool permissions | 2 of 7 | 0 of 8 |
+| Output judge (second model) | 5 of 5 | **5 of 8** |
 
 Tool permissions were the clear winner. Path containment, a recipient allowlist and an outbound
-content check closed both tool-misuse attacks at no cost to normal use. They are deterministic,
+content check closed the two tool-misuse attacks that were still working, at no cost to normal
+use. They are deterministic,
 instant, and they never guess.
 
 The input filter is worth having but is not a boundary. It stops attacks whose payloads contain
@@ -130,10 +136,17 @@ defence that used AI to catch AI was the one that broke the product.
 These are my own errors. I am including them because the method is the part that transfers, and
 because four of the six made the system look better than it was.
 
-**My results table flattered the defences.** Thirteen attacks failed at baseline with no defence
-enabled, and my table rendered them as "blocked". It reported 65% effectiveness for a
-configuration containing no defences. The model had simply not carried the attacks out.
-Capability limits are not controls. I now render three outcomes: vulnerable, blocked, failed.
+**My results table flattered the defences, twice.** Eleven attacks fail at baseline with no
+defence enabled, because the model simply does not carry them out. My table rendered those as
+"blocked" and reported an effectiveness figure for a configuration containing no defences at
+all. Capability limits are not controls, so I now render three outcomes: vulnerable, blocked,
+and failed on its own.
+
+The second version of the same mistake survived longer. Because the configurations are
+cumulative, the count of attacks stopped at each stage includes everything the earlier defences
+had already stopped, and I was quoting those totals as if each defence had earned them. Tool
+permissions looked like it stopped 5; it closed 2 that were still working. The table now
+reports marginal contribution alongside the cumulative count.
 
 **My input filter had been handed the answer.** The first version checked text for the canary
 string and scored beautifully, because it knew the exact secret it was defending. Real filters
@@ -203,6 +216,11 @@ wrong answer there still looks plausible.
 - **Small models only.** Everything here is 3-4B parameters on CPU. A larger model would carry
   out more of these attacks, so the "failed on their own" column would shrink. These numbers are
   a floor, not a ceiling.
+- **Only one model ran the complete suite.** `llama3.2:3b` ran all 20 attacks at all four
+  configurations. `qwen2.5:3b` covers all 20 but has 2 errored runs excluded from its counts.
+  `phi4-mini` covers 12 of 20 at two configurations only, because it is slower and a full run
+  was impractical on this hardware. The generated tables declare each model's coverage; the
+  cross-model figures should not be read as like-for-like.
 - **Single runs at temperature zero.** No repeated trials, so no confidence intervals. A finding
   that fires once is a finding, but a rate measured once is not a rate.
 - **Two of three models reviewed.** I reviewed 34 triage claims across `qwen2.5:3b` and

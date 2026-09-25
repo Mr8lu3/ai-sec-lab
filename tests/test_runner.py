@@ -67,7 +67,9 @@ def test_errored_runs_are_excluded_from_the_summary():
         _record("di-01", "baseline", "m", False, "2026-09-01T00:00:00", error="timeout"),
         _record("di-02", "baseline", "m", True, "2026-09-01T00:00:00"),
     ]
-    assert "| 1/1 | 0 | 0 |" in runner.render_matrix(records, "m")
+    # Columns: succeeding | newly closed | cumulative stopped | failed alone.
+    # The first configuration present has no predecessor, so marginal is "–".
+    assert "| 1/1 | – | 0 | 0 |" in runner.render_matrix(records, "m")
 
 
 def test_refused_tool_call_counts_as_a_defence_stopping_the_attack():
@@ -94,9 +96,48 @@ def test_summary_separates_defended_from_self_failed():
         _record("di-03", "d1", "m", False, "2026-09-01T00:00:00", blocked=False),
     ]
     table = runner.render_matrix(records, "m")
-    assert "| 1/3 | 1 | 1 |" in table, "one succeeded, one defended, one failed by itself"
+    assert "| 1/3 | – | 1 | 1 |" in table, "one succeeded, one defended, one failed by itself"
 
 
 def test_render_matrix_includes_framework_columns():
     table = runner.render_matrix([_record("di-01", "baseline", "m", True, "2026-09-01T00:00:00")], "m")
     assert "OWASP" in table and "ATLAS" in table and "AML.T0051.000" in table
+
+
+def test_matrix_declares_its_own_coverage():
+    """A partial run set beside a complete one without saying so invites a false comparison,
+    so the table states how much of the suite it actually covers."""
+    records = [_record("di-01", "baseline", "m", True, "2026-09-01T00:00:00")]
+    table = runner.render_matrix(records, "m")
+    assert "Coverage: 1/20 attacks" in table
+    assert "partial run" in table
+
+
+def test_complete_run_is_not_labelled_partial():
+    from aisec.m1 import attacks as attack_mod
+    from aisec.m1 import defences
+    records = [_record(a.id, cfg, "m", False, "2026-09-01T00:00:00")
+               for a in attack_mod.ATTACKS for cfg in defences.CONFIGS]
+    table = runner.render_matrix(records, "m")
+    assert "Coverage: 20/20 attacks" in table
+    assert "partial run" not in table
+
+
+def test_errored_runs_are_declared_in_coverage():
+    records = [_record("di-01", "baseline", "m", False, "2026-09-01T00:00:00", error="timeout")]
+    assert "1 run(s) errored" in runner.render_matrix(records, "m")
+
+
+def test_summary_reports_marginal_contribution_not_just_cumulative():
+    """Configurations are cumulative, so the count stopped at d2 includes everything d1 already
+    stopped. Reporting only that number credits each defence with its predecessors' work."""
+    records = []
+    # baseline: 4 succeed. d1: 2 succeed (closed 2). d2: 1 succeeds (closed 1 more).
+    for i, (cfg, succeeding) in enumerate([("baseline", 4), ("d1", 2), ("d2", 1)]):
+        for n in range(4):
+            records.append(_record(f"a-{n}", cfg, "m", n < succeeding,
+                                   "2026-09-01T00:00:00", blocked=n >= succeeding))
+    table = runner.render_matrix(records, "m")
+    assert "| 4/4 | – |" in table, "baseline has no previous config to improve on"
+    assert "| 2/4 | **2** |" in table, "d1 closed two"
+    assert "| 1/4 | **1** |" in table, "d2 closed one more, not three"

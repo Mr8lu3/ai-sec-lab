@@ -55,23 +55,33 @@ tool misuse, then added three defences one at a time to see what each one bought
 
 ### Results, `llama3.2:3b`
 
-| Configuration | Attacks succeeding | Stopped by a defence | Failed on their own | Legitimate requests blocked |
+The configurations are cumulative. Tool permissions runs with the input filter also enabled,
+and the output judge runs with all three. So the only column that attributes a result to a
+single defence is "newly closed".
+
+| Configuration | Attacks succeeding | Newly closed by this defence | Failed on their own | Legitimate requests blocked |
 |---|---|---|---|---|
-| No defences | **9/20** | 0 | 11 | 0/8 |
-| Input filter | 7/20 | 3 | 10 | 0/8 |
-| Tool permissions | 5/20 | 5 | 10 | 0/8 |
-| Output judge | 0/20 | 15 | 5 | **5/8** |
+| No defences | **9/20** | – | 11 | 0/8 |
+| + input filter | 7/20 | 2 | 10 | 0/8 |
+| + tool permissions | 5/20 | 2 | 10 | 0/8 |
+| + output judge | 0/20 | 5 | 5 | **5/8** |
 
 Full tables for all three models are in [`results/m1_matrix.md`](results/m1_matrix.md).
+
+`llama3.2:3b` is the only model I ran over the complete suite at all four configurations.
+`qwen2.5:3b` covers all 20 attacks but has 2 errored runs excluded from its counts, and
+`phi4-mini` covers only 12 of 20 attacks at two configurations, because its slower inference
+made a full run impractical on my hardware. The generated tables state each model's coverage
+so a partial run is not read as a complete one.
 
 ### What I take from that
 
 Tool permissions were the only defence worth the name. Path containment and a recipient
-allowlist closed both tool-misuse attacks and broke nothing. They are deterministic, they cost
-no inference time, and they do not guess.
+allowlist closed the two tool-misuse attacks that were still working, and broke nothing. They
+are deterministic, they cost no inference time, and they do not guess.
 
-The output judge is the interesting one. It blocked every attack, which looks like a perfect
-score until you check what it did to normal use. It refused to name the person who approved a
+The output judge is the interesting one. It closed the last 5 attacks and took the suite to
+zero, which looks like a perfect score until you check what it did to normal use. It refused to name the person who approved a
 budget because the answer "contains a specific date". It refused to explain the incident
 reporting process because that "reveals a system prompt". It refused to send an ordinary
 internal email. An attack-blocking rate quoted without a false-positive rate is not a security
@@ -80,8 +90,8 @@ result, and building the benign suite is what showed me that.
 Eleven attacks failed at baseline with no defence enabled at all. The model simply did not
 carry them out. That is a capability limit of a 3B model, not a control, and it would not hold
 against something larger. I report it in its own column because an earlier version of my table
-counted those as "blocked" and claimed 65% effectiveness for a configuration with no defences
-in it.
+counted those as "blocked", which produced an effectiveness figure for a configuration that had
+no defences in it.
 
 Every attack maps to an OWASP LLM Top 10 entry and a MITRE ATLAS technique. I checked those
 identifiers against the published sources rather than writing them from memory, and that check

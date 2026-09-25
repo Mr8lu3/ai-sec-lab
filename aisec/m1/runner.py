@@ -277,7 +277,12 @@ def render_matrix(results: list[dict], model: str) -> str:
             f"{attack.owasp} | {attack.atlas} | " + " | ".join(cells) + " |"
         )
 
+    # The configurations are CUMULATIVE: d2 runs the input filter as well as tool permissions,
+    # d3 runs all three. So "stopped by a defence" at d2 includes everything d1 already stopped.
+    # Reporting those cumulative counts per row makes each defence look stronger than it was,
+    # so the marginal column states what THIS configuration closed that the previous one did not.
     summary = []
+    previous_vulnerable = None
     for cfg in configs:
         records = [latest[k] for k in latest if k[1] == cfg and k[2] == model]
         tested = [r for r in records if not r.get("error")]
@@ -285,17 +290,41 @@ def render_matrix(results: list[dict], model: str) -> str:
         stopped = sum(1 for r in tested if not r["attack_succeeded"] and was_defended(r))
         failed = len(tested) - vulnerable - stopped
         if tested:
+            marginal = ("–" if previous_vulnerable is None
+                        else f"**{previous_vulnerable - vulnerable}**")
             summary.append(
                 f"| {defences.CONFIG_LABELS[cfg]} | {vulnerable}/{len(tested)} | "
-                f"{stopped} | {failed} |"
+                f"{marginal} | {stopped} | {failed} |"
             )
+            previous_vulnerable = vulnerable
 
-    parts = [f"### Attack results — `{model}`", "", header, sep, *rows]
+    # Coverage line. Not every model was run over the full suite or every configuration -
+    # phi4-mini was run on a subset to keep the CPU-only runtime tractable - and a table that
+    # sets a partial run beside a complete one without saying so invites a false comparison.
+    ran = {k[0] for k in latest if k[2] == model}
+    configs_run = sorted({k[1] for k in latest if k[2] == model},
+                         key=lambda c: list(defences.CONFIGS).index(c))
+    errored = sum(1 for k in latest if k[2] == model and latest[k].get("error"))
+    coverage = (f"Coverage: {len(ran)}/{len(attack_mod.ATTACKS)} attacks, "
+                f"configurations {', '.join(configs_run)}"
+                + (f". {errored} run(s) errored and are excluded from the counts below."
+                   if errored else "."))
+    if len(ran) < len(attack_mod.ATTACKS) or len(configs_run) < len(defences.CONFIGS):
+        coverage += (" **This is a partial run and is not directly comparable to a model run "
+                     "over the full suite.**")
+
+    parts = [f"### Attack results — `{model}`", "", coverage, "", header, sep, *rows]
     if summary:
         parts += ["", "#### Defence effectiveness", "",
-                  "| Configuration | Attacks still succeeding | Stopped by a defence "
-                  "| Failed on their own |",
-                  "|---|---|---|---|", *summary,
+                  "| Configuration | Attacks still succeeding | Newly closed by this defence "
+                  "| Stopped by a defence (cumulative) | Failed on their own |",
+                  "|---|---|---|---|---|", *summary,
+                  "",
+                  "Configurations are cumulative: *+ tool permissions* runs the input filter "
+                  "too, and *+ output judge* runs all three. **Newly closed by this defence** "
+                  "is what that configuration closed which the previous one did not, and is "
+                  "the only column that attributes a result to a single defence. The "
+                  "cumulative column credits every defence active in that run.",
                   "",
                   "*Failed on their own* counts attacks the model simply did not carry out, "
                   "with no defence involved. At baseline that column is the model's own "
