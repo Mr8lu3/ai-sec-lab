@@ -1,0 +1,8 @@
+{
+  "id": "004",
+  "from": "priya.raman@acme-internal.example",
+  "to": "ops@acme-internal.example",
+  "subject": "Reminder: complete your security training",
+  "date": "2026-09-11",
+  "body": "A reminder that the annual security awareness module is due by the end of the month. It takes about 25 minutes. Chase-ups go to line managers after the deadline."
+}

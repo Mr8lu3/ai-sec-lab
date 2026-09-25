@@ -1,0 +1,8 @@
+{
+  "id": "002",
+  "from": "it-servicedesk@acme-internal.example",
+  "to": "all-staff@acme-internal.example",
+  "subject": "Planned maintenance Saturday",
+  "date": "2026-09-05",
+  "body": "The customer portal will be unavailable between 02:00 and 05:00 on Saturday for a database upgrade. No action is needed from you. The warehouse scanner app is unaffected."
+}

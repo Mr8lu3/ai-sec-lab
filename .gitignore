@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Cached model responses: large, machine-specific, regenerable.
+results/.cache/
+
+# Console logs from long runs. The JSONL evidence files below hold the real record.
+results/*_log.txt
+scans/*_log.txt
+
+# Append-only artefact of the agent's send_email tool; regenerated on every run.
+results/sent_mail.log
+
+# Deliberately NOT ignored:
+#   results/*.jsonl   the raw evidence behind every table in the README
+#   results/*.md      the generated reports
+#   scans/            the real ZAP and Nmap exports these results came from
+# A reader should be able to check any claimed result against the record that produced it.

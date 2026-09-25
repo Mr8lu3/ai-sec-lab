@@ -1,0 +1,119 @@
+{
+  "@programName": "ZAP",
+  "@version": "2.15.0",
+  "@generated": "Thu, 25 Sep 2026 14:02:11",
+  "site": [
+    {
+      "@name": "http://localhost:3000",
+      "@host": "localhost",
+      "@port": "3000",
+      "@ssl": "false",
+      "alerts": [
+        {
+          "pluginid": "10038",
+          "alertRef": "10038-1",
+          "alert": "Content Security Policy (CSP) Header Not Set",
+          "name": "Content Security Policy (CSP) Header Not Set",
+          "riskcode": "2",
+          "confidence": "3",
+          "riskdesc": "Medium (High)",
+          "desc": "<p>Content Security Policy is an added layer of security that helps to detect and mitigate certain types of attacks.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/", "method": "GET", "param": "", "evidence": ""},
+            {"uri": "http://localhost:3000/#/login", "method": "GET", "param": "", "evidence": ""},
+            {"uri": "http://localhost:3000/#/search", "method": "GET", "param": "", "evidence": ""}
+          ],
+          "count": "3",
+          "solution": "<p>Ensure that your web server sets the Content-Security-Policy header.</p>",
+          "cweid": "693",
+          "wascid": "15"
+        },
+        {
+          "pluginid": "10020",
+          "alertRef": "10020-1",
+          "alert": "Missing Anti-clickjacking Header",
+          "name": "Missing Anti-clickjacking Header",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>The response does not include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/", "method": "GET", "param": "x-frame-options", "evidence": ""}
+          ],
+          "count": "1",
+          "solution": "<p>Ensure one of them is set on all web pages returned by your site.</p>",
+          "cweid": "1021",
+          "wascid": "15"
+        },
+        {
+          "pluginid": "10036",
+          "alertRef": "10036-1",
+          "alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "riskcode": "1",
+          "confidence": "3",
+          "riskdesc": "Low (High)",
+          "desc": "<p>The web/application server is leaking version information via the Server HTTP response header.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/", "method": "GET", "param": "", "evidence": "Express"}
+          ],
+          "count": "1",
+          "solution": "<p>Configure the server to suppress the Server header.</p>",
+          "cweid": "200",
+          "wascid": "13"
+        },
+        {
+          "pluginid": "40018",
+          "alertRef": "40018-1",
+          "alert": "SQL Injection",
+          "name": "SQL Injection",
+          "riskcode": "3",
+          "confidence": "2",
+          "riskdesc": "High (Medium)",
+          "desc": "<p>SQL injection may be possible.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/rest/products/search?q=apple", "method": "GET", "param": "q", "attack": "apple'", "evidence": "SQLITE_ERROR"}
+          ],
+          "count": "1",
+          "solution": "<p>Use parameterised queries.</p>",
+          "cweid": "89",
+          "wascid": "19"
+        },
+        {
+          "pluginid": "10015",
+          "alertRef": "10015-1",
+          "alert": "Re-examine Cache-control Directives",
+          "name": "Re-examine Cache-control Directives",
+          "riskcode": "0",
+          "confidence": "1",
+          "riskdesc": "Informational (Low)",
+          "desc": "<p>The cache-control header has not been set properly.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/", "method": "GET", "param": "cache-control", "evidence": ""}
+          ],
+          "count": "1",
+          "solution": "<p>Set adequate cache-control directives.</p>",
+          "cweid": "525",
+          "wascid": "13"
+        },
+        {
+          "pluginid": "10038",
+          "alertRef": "10038-2",
+          "alert": "Content Security Policy (CSP) Header Not Set",
+          "name": "Content Security Policy (CSP) Header Not Set",
+          "riskcode": "2",
+          "confidence": "3",
+          "riskdesc": "Medium (High)",
+          "desc": "<p>Content Security Policy is an added layer of security.</p>",
+          "instances": [
+            {"uri": "http://localhost:3000/ftp", "method": "GET", "param": "", "evidence": ""}
+          ],
+          "count": "1",
+          "solution": "<p>Ensure that your web server sets the Content-Security-Policy header.</p>",
+          "cweid": "693",
+          "wascid": "15"
+        }
+      ]
+    }
+  ]
+}

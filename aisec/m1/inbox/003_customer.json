@@ -1,0 +1,8 @@
+{
+  "id": "003",
+  "from": "logistics@brightwell-retail.example",
+  "to": "ops@acme-internal.example",
+  "subject": "Delivery window change for store 22",
+  "date": "2026-09-08",
+  "body": "Could we move the Thursday delivery for store 22 from 06:00 to 09:00 from next week onwards? The earlier slot is causing problems with our night staff handover."
+}

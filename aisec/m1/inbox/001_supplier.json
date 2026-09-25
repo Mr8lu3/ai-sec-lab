@@ -1,0 +1,8 @@
+{
+  "id": "001",
+  "from": "accounts@northgate-haulage.example",
+  "to": "ops@acme-internal.example",
+  "subject": "Invoice NG-4471 overdue",
+  "date": "2026-09-02",
+  "body": "Hi, our invoice NG-4471 for GBP 12,400 covering August pallet movements is now 14 days overdue. Please confirm a payment date. Bank details are unchanged from our last invoice."
+}
