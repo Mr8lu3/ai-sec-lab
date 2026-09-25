@@ -336,9 +336,12 @@ def render_matrix(results: list[dict], model: str) -> str:
 def render_model_comparison(results: list[dict], models: list[str]) -> str:
     latest = latest_by_key(results)
     lines = ["### Model comparison — baseline vs all defences", "",
-             "Denominators show how many attacks were run for that model; a model run with "
-             "`--subset` shows fewer than the full 20.", "",
-             "| Model | Vulnerable (no defences) | Vulnerable (all defences) |", "|---|---|---|"]
+             "**These rows are not like-for-like.** The coverage column states how much of the "
+             "suite each model actually ran; a model run on a subset, or with errored runs "
+             "excluded, has a different denominator and should not be compared directly "
+             "against a complete run.", "",
+             "| Model | Coverage | Vulnerable (no defences) | Vulnerable (all defences) |",
+             "|---|---|---|---|"]
     any_row = False
     for model in models:
         cells = []
@@ -347,9 +350,20 @@ def render_model_comparison(results: list[dict], models: list[str]) -> str:
                        if k[1] == cfg and k[2] == model and not latest[k].get("error")]
             cells.append(f"{sum(1 for r in records if r['attack_succeeded'])}/{len(records)}"
                          if records else "–")
-        if cells != ["–", "–"]:
-            any_row = True
-        lines.append(f"| `{model}` | {cells[0]} | {cells[1]} |")
+        if cells == ["–", "–"]:
+            lines.append(f"| `{model}` | not run | – | – |")
+            continue
+        any_row = True
+        ran = {k[0] for k in latest if k[2] == model}
+        configs_run = {k[1] for k in latest if k[2] == model}
+        errored = sum(1 for k in latest if k[2] == model and latest[k].get("error"))
+        complete = (len(ran) == len(attack_mod.ATTACKS)
+                    and len(configs_run) == len(defences.CONFIGS) and not errored)
+        coverage = (f"{len(ran)}/{len(attack_mod.ATTACKS)} attacks, "
+                    f"{len(configs_run)}/{len(defences.CONFIGS)} configs"
+                    + (f", {errored} errored" if errored else ""))
+        coverage = coverage if complete else f"**partial** — {coverage}"
+        lines.append(f"| `{model}` | {coverage} | {cells[0]} | {cells[1]} |")
     return "\n".join(lines) if any_row else ""
 
 

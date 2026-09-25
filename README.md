@@ -13,19 +13,21 @@ container on my own machine.
 | 2 | Whether a local model can triage real scanner output, and how often it is wrong |
 | 3 | Whether a local model can draft report prose, and what I had to correct |
 
-I ran three models throughout: `qwen2.5:3b`, `llama3.2:3b` and `phi4-mini`. They are small
-enough to run at 15-25 seconds per call on a 2015 dual-core laptop with no GPU, which is the
-hardware I had.
+I used three models: `qwen2.5:3b`, `llama3.2:3b` and `phi4-mini`. They are small enough to run
+at 15-25 seconds per call on a 2015 dual-core laptop with no GPU, which is the hardware I had.
+Coverage differs between them and the generated tables say so on every row: only
+`llama3.2:3b` ran the complete attack suite at all four configurations.
 
-285 tests, passing on Windows and Linux.
+292 tests, passing on Windows and Linux.
 
 ---
 
 ## Headline results
 
 **Module 1.** Nine of twenty attacks worked against an undefended LLM application. Tool
-permissions stopped the worst of them at no cost. A second model checking outputs stopped
-every attack and also blocked five of eight legitimate requests, which makes it unusable.
+permissions closed the two tool-misuse attacks still working at that point, at no cost to
+normal use. Adding a second model to check outputs left zero attacks succeeding, but it also
+blocked five of eight legitimate requests, which makes it unusable.
 
 **Module 2.** I reviewed 34 triage claims by hand across two models. `qwen2.5:3b` got 2 of 17
 right. `phi4-mini` got 2 of 17 right. Reproduction also showed that the scanner itself was
@@ -69,10 +71,19 @@ single defence is "newly closed".
 Full tables for all three models are in [`results/m1_matrix.md`](results/m1_matrix.md).
 
 `llama3.2:3b` is the only model I ran over the complete suite at all four configurations.
-`qwen2.5:3b` covers all 20 attacks but has 2 errored runs excluded from its counts, and
-`phi4-mini` covers only 12 of 20 attacks at two configurations, because its slower inference
-made a full run impractical on my hardware. The generated tables state each model's coverage
-so a partial run is not read as a complete one.
+
+`qwen2.5:3b` covers all 20 attacks, but two of its runs errored and are excluded from the
+counts, which is why its denominator is 19 at the first two configurations and 20 at the last
+two. Both errors are the same attack, `di-05` against the agent, where the model's tool-
+selection JSON was cut off by a token limit I had set too low. I raised the limit afterwards,
+so a re-run would probably clear them, but I have left the recorded result as it is rather
+than quietly re-running until the table looks tidy.
+
+`phi4-mini` covers only 12 of 20 attacks at two configurations, because it is slower and a
+full run was impractical on this hardware.
+
+The generated tables state each model's coverage on the row itself, so a partial run is not
+read as a complete one.
 
 ### What I take from that
 
@@ -257,7 +268,7 @@ aisec/m3/    report drafting and assembly
 cli.py       one entry point for everything
 scans/       the real ZAP and Nmap exports these results come from
 results/     JSONL evidence and generated reports
-tests/       285 tests, none of which need a model running
+tests/       292 tests, none of which need a model running
 docs/        framework mapping and my review rubric
 ```
 

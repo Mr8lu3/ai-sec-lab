@@ -205,10 +205,12 @@ def build_diff() -> str:
         "",
     ]
     edited_count = 0
+    drafted_count = 0
     for finding in findings:
         raw_text, final_text = _read(DRAFTS_DIR, finding.id), _read(FINAL_DIR, finding.id)
         if not raw_text:
             continue
+        drafted_count += 1
         stats = edit_stats(finding.id)
         changed_sections = [s for s in SECTIONS if stats[s]["changed"]]
         if changed_sections:
@@ -221,7 +223,10 @@ def build_diff() -> str:
                 raw_text.splitlines(), final_text.splitlines(),
                 fromfile="ai_draft", tofile="human_final", lineterm="", n=1)
             lines += ["```diff", *diff, "```", ""]
-    lines.insert(4, f"**{edited_count} of {len(findings)} drafts required human edits.**\n")
+    # Denominator is drafts that exist, not findings considered. Counting undrafted findings
+    # here reported "5 of 14" for a run where all 5 drafts needed editing, which understated
+    # the edit rate and made the model look better than it was.
+    lines.insert(4, f"**{edited_count} of {drafted_count} drafts required human edits.**\n")
     text = "\n".join(lines)
     DIFF_PATH.write_text(text, encoding="utf-8")
     return text

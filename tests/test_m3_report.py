@@ -180,3 +180,18 @@ def test_diff_reports_how_many_drafts_needed_editing(isolated):
     text = report_mod.build_diff()
     assert "**1 of 2 drafts required human edits.**" in text
     assert "```diff" in text and "Corrected." in text
+
+
+def test_diff_denominator_counts_drafts_not_findings(isolated):
+    """Regression: the denominator counted every finding considered, including ones never
+    drafted, reporting '5 of 14' when all 5 existing drafts had been edited. That understated
+    the edit rate and flattered the model."""
+    drafted, undrafted = _finding("zap-drafted"), _finding("zap-undrafted")
+    review_mod.save_findings([drafted, undrafted])
+    _confirm(drafted.id)
+    _confirm(undrafted.id)
+    report_mod.write_draft(drafted, SAMPLE)
+    report_mod.seed_final(drafted, SAMPLE)
+    (report_mod.FINAL_DIR / f"{drafted.id}.md").write_text(
+        to_markdown(drafted, {**SAMPLE, "impact": "Corrected."}), encoding="utf-8")
+    assert "**1 of 1 drafts required human edits.**" in report_mod.build_diff()

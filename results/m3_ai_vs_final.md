@@ -2,7 +2,7 @@
 
 Left side (`-`) is the unedited local-model draft. Right side (`+`) is what a human sent to the client. This file exists so a reader can judge how much correction AI-assisted report writing actually needed.
 
-**5 of 14 drafts required human edits.**
+**5 of 5 drafts required human edits.**
 
 ## `zap-28cf0c8a` CORS Misconfiguration
 

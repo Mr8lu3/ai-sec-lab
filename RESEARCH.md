@@ -8,11 +8,13 @@ have not measured something, I say so.
 
 ## Where the AI genuinely helped
 
-**Structured output solved reliability completely.** Asking a 3B model for free-text tool calls
-produces malformed syntax often enough that you end up measuring your own parser instead of the
-model. Constraining decoding to a JSON schema removed that failure entirely. Across hundreds of
-agent decisions I did not get one malformed call. If I build anything agentic on a small model
-again, this is the first thing I will reach for.
+**Structured output eliminated malformed tool calls in my tested runs.** Asking a 3B model for
+free-text tool calls produces malformed syntax often enough that you end up measuring your own
+parser instead of the model. Constraining decoding to a JSON schema removed that failure across
+every agent decision I recorded, with three models over a few hundred calls. I did get two
+runs where the JSON was cut off mid-document by my token limit, which is a different problem
+and one I caused. If I build anything agentic on a small model again, this is the first thing
+I will reach for.
 
 **It is a fast first pass over volume.** Triaging 17 findings took a few minutes unattended. On
 a real engagement with hundreds of scanner alerts, a first-pass sort has value, as long as

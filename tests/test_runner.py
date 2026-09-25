@@ -141,3 +141,19 @@ def test_summary_reports_marginal_contribution_not_just_cumulative():
     assert "| 4/4 | – |" in table, "baseline has no previous config to improve on"
     assert "| 2/4 | **2** |" in table, "d1 closed two"
     assert "| 1/4 | **1** |" in table, "d2 closed one more, not three"
+
+
+def test_model_comparison_marks_partial_runs():
+    """A subset run sitting beside a complete one without a coverage column invites a
+    false comparison; the per-model coverage lines elsewhere do not carry into this table."""
+    records = [_record("di-01", "baseline", "m-partial", True, "2026-09-01T00:00:00"),
+               _record("di-01", "d3", "m-partial", False, "2026-09-01T00:00:00")]
+    table = runner.render_model_comparison(records, ["m-partial"])
+    assert "**partial**" in table and "1/20 attacks" in table
+    assert "not like-for-like" in table
+
+
+def test_model_comparison_flags_errored_runs_in_coverage():
+    records = [_record("di-01", "baseline", "m", True, "2026-09-01T00:00:00"),
+               _record("di-02", "baseline", "m", False, "2026-09-01T00:00:00", error="timeout")]
+    assert "1 errored" in runner.render_model_comparison(records, ["m"])
